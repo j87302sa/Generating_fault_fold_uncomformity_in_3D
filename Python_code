@@ -1,0 +1,64 @@
+#Import necessary libraries
+import numpy as np
+import gempy as gp
+import gempy_viewer as gpv
+from gempy_engine.core.data.stack_relation_type import StackRelationType
+
+# Define the path to data
+data_path = 'https://raw.githubusercontent.com/cgre-aachen/gempy_data/master/'
+path_to_data = data_path + "/data/input_data/jan_models/"
+
+# Create Geomodel instance
+# Notice the change in dimensions
+geo_data = gp.create_geomodel(
+    project_name='combination',
+    extent=[0, 2500, 0, 1000, 0, 1000],
+    refinement=6,
+    resolution=[20,20,20],
+    importer_helper=gp.data.ImporterHelper(
+        path_to_orientations=path_to_data + "model7_orientations.csv",
+        path_to_surface_points=path_to_data + "model7_surface_points.csv"
+    )
+)
+
+# Map geological series to surfaces
+# Notice that we have to tell the system about the presence of fault
+gp.map_stack_to_surfaces(
+    gempy_model=geo_data,
+    mapping_object={
+        "Fault_Series" : ('fault'),
+        "Strat_Series1": ('rock3'),
+        "Strat_Series2": ('rock2', 'rock1'),
+    }
+)
+
+# Define the structural relation
+geo_data.structural_frame.structural_groups[0].structural_relation = StackRelationType.FAULT
+#To return an array describing the fault relations between the structural groups
+geo_data.structural_frame.fault_relations = np.array(
+    [[0, 1, 1],
+     [0, 0, 0],
+     [0, 0, 0]]
+)
+
+# Compute the geological model
+geo_data.interpolation_options.number_octree_levels_surface = 5
+gp.compute_model(geo_data)
+geo_data.structural_frame
+
+# Plot geological model
+gpv.plot_2d(geo_data, direction=['y'], show_results=False) #without connecting the boundaries      
+
+# plotting for x/y direction with data and boundaries. we also have to plot the blocks accounting for fault blocks
+gpv.plot_2d(geo_data, direction='y', show_data=True, show_boundaries=True)
+gpv.plot_2d(geo_data, direction='x', show_data=True)
+
+# Plot the blocks accounting for fault blocks
+gpv.plot_2d(
+    model=geo_data,
+    override_regular_grid=geo_data.solutions.raw_arrays.litho_faults_block,
+    show_data=True, kwargs_lithology={'cmap': 'Set1', 'norm': None}
+)
+
+# plot 3D
+gpv.plot_3d(geo_data)
