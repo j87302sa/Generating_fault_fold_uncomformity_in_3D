@@ -48,11 +48,12 @@ geo_data.structural_frame
 
 # Plot geological model
 gpv.plot_2d(geo_data, direction=['y'], show_results=False) #without connecting the boundaries      
+# CHECK FIGURE 1 FOR GENERATED IMAGE
 
 # plotting for x/y direction with data and boundaries. we also have to plot the blocks accounting for fault blocks
 gpv.plot_2d(geo_data, direction='y', show_data=True, show_boundaries=True)
 gpv.plot_2d(geo_data, direction='x', show_data=True)
-
+# CHECK FIGURE 2,3,4 FOR GENERATED IMAGE
 # Plot the blocks accounting for fault blocks
 gpv.plot_2d(
     model=geo_data,
